@@ -5,15 +5,16 @@ import java.io.IOException;
 
 public class Player extends Entity {
 
-    GamePanel gp;
-    KeyHandler keyH;
 
+    KeyHandler keyH;
     public final int screenX;
     public final int screenY;
 
+
     public Player(GamePanel gp, KeyHandler keyH) {
 
-        this.gp = gp;
+        super(gp);
+
         this.keyH = keyH;
 
         screenX=gp.screenWidth/2 - (gp.tileSize/2);
@@ -22,6 +23,8 @@ public class Player extends Entity {
         solidArea = new Rectangle();
         solidArea.x = 8;
         solidArea.y = 16;
+        solidAreaDefaultX = solidArea.x;
+        solidAreasDefaultY = solidArea.y;
         solidArea.width = 32;
         solidArea.height = 32;
 
@@ -34,27 +37,22 @@ public class Player extends Entity {
         worldY =gp.tileSize*21;
         speed =4;
         direction=  "down";
+
+        //Player Status
+        maxLife = 6;
+        life = maxLife;
     }
     public void getPlayerImage(){
 
-        try {
-
-            up1= ImageIO.read(getClass().getResourceAsStream("/Res/boy_up_1.png"));
-            up2= ImageIO.read(getClass().getResourceAsStream("/Res/boy_up_2.png"));
-            down1= ImageIO.read(getClass().getResourceAsStream("/Res/boy_down_1.png"));
-            down2= ImageIO.read(getClass().getResourceAsStream("/Res/boy_down_2.png"));
-            left1= ImageIO.read(getClass().getResourceAsStream("/Res/boy_left_1.png"));
-            left2= ImageIO.read(getClass().getResourceAsStream("/Res/boy_left_2.png"));
-            right1= ImageIO.read(getClass().getResourceAsStream("/Res/boy_right_1.png"));
-            right2= ImageIO.read(getClass().getResourceAsStream("/Res/boy_right_2.png"));
-
-
-        }catch(IOException e){
-            e.printStackTrace();
-
-        }
+        up1 = setup("/Res/boy_up_1");
+        up2 = setup("/Res/boy_up_2");
+        down1 = setup("/Res/boy_down_1");
+        down2 = setup("/Res/boy_down_2");
+        left1 = setup("/Res/boy_left_1");
+        left2 = setup("/Res/boy_left_2");
+        right1 = setup("/Res/boy_right_1");
+        right2 = setup("/Res/boy_right_2");
     }
-
     public void update(){
 
         if(keyH.upPressed == true || keyH.downPressed == true
@@ -77,11 +75,19 @@ public class Player extends Entity {
 
             }
             //Check Tile Collision
-            colisionOn= false;
+            collisionOn= false;
             gp.cChecker.checkTile(this);
 
+            // Check Object Collision
+            int objIndex = gp.cChecker.checkObject(this, true);
+            pickUpObject(objIndex);
+
+            //Check NPC Collision
+            int npcIndex = gp.cChecker.checkEntity(this, gp.npc);
+            interactNPC(npcIndex);
+
             //If Collision is false, player can move
-            if(colisionOn == false){
+            if(collisionOn == false){
 
                 switch(direction){
                     case "up":
@@ -112,6 +118,22 @@ public class Player extends Entity {
         }
 
     }
+    public void pickUpObject(int i){
+        if(i !=999){
+
+        }
+    }
+    public void interactNPC(int i){
+        if(i !=999){
+
+            if(gp.keyH.enterPressed == true){
+                gp.gameState= gp.dialogueState;
+                gp.npc[i].speak();
+            }
+        }
+        gp.keyH.enterPressed = false;
+    }
+
     public void draw(Graphics2D g2) {
 
         //g2.setColor(Color.white);
@@ -154,6 +176,6 @@ public class Player extends Entity {
                             break;
 
         }
-        g2.drawImage(image,screenX, screenY, gp.tileSize, gp.tileSize, null);
+        g2.drawImage(image,screenX, screenY,null);
     }
 }
